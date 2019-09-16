@@ -10,7 +10,7 @@ This project is not affiliated with CloudFlare in any way and CloudFlare and ass
 Usage
 --
 
-    from pycloudflare import CloudFlare
+    from pycflare import CloudFlare
     
     # I would recommend using environmental variables or 
     # some other method that does not hard-code your secrets.
