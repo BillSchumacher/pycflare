@@ -1,4 +1,4 @@
-pycloudflare
+pycflare
 ============
 
 Provides a class and methods to interact with the CloudFlare Workers KV service.
