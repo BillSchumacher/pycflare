@@ -16,7 +16,7 @@ Usage
     # some other method that does not hard-code your secrets.
     auth_email = "YOUR_CLOUDFLARE_AUTH_EMAIL"
     auth_key = "YOUR_CLOUDFLARE_AUTH_KEY"
-    accound_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
+    account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
     
     cf = CloudFlare(auth_email, auth_key)
     
