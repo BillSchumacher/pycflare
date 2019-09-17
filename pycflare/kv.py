@@ -468,6 +468,11 @@ class Storage(object):
             except json.decoder.JSONDecodeError:
                 return Key(account_id, namespace_id, cf=self.cf, name=key_name, value=result)
             except TypeError:
+                if type(result) == dict:
+                    success = result.get("success")
+                    if success is not None:
+                        if not success:
+                            return None
                 return Key(account_id, namespace_id, cf=self.cf, name=key_name, value=result)
         return None
 
