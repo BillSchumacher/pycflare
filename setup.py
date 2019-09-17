@@ -20,7 +20,7 @@ packages = [
     "pycflare",
 ]
 
-requirements = open("requirements.txt", "r").read().split("\n")
+requirements = ["requests"]
 system_platform = platform.system()
 
 these_requirements = []
@@ -34,7 +34,7 @@ test_requirements += these_requirements
 
 setup(
     name="pycflare",
-    version="0.2",
+    version="0.2a1",
     author="Bill Schumacher",
     author_email="williamschumacher@gmail.com",
     description="Python bindings for CloudFlare",
