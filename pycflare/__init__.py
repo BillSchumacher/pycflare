@@ -46,6 +46,7 @@ class CloudFlare(object):
         except AttributeError:
             self.__setattr__(name, Account(identifier=account_id, name=name, cf=self))
             self.accounts[account_id] = self.__getattribute__(name)
+            return self.accounts[account_id]
 
     @staticmethod
     def try_get_request(request_url, headers):
