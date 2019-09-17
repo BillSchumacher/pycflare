@@ -467,6 +467,8 @@ class Storage(object):
                 return Key(account_id, namespace_id, cf=self.cf, name=key_name, value=json.loads(result))
             except json.decoder.JSONDecodeError:
                 return Key(account_id, namespace_id, cf=self.cf, name=key_name, value=result)
+            except TypeError:
+                return Key(account_id, namespace_id, cf=self.cf, name=key_name, value=result)
         return None
 
     def write_key(self, account_id, namespace_id, key_name, data, expiration=None, expiration_ttl=None):
