@@ -11,6 +11,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 
 import json
+import simplejson
 
 import requests
 
@@ -56,9 +57,12 @@ class CloudFlare(object):
                 r = response.json()
                 if not r.get("result"):
                     return dict(result=r, success=True)
-                return response.json()
+                return r
             except json.decoder.JSONDecodeError:
                 return dict(result=response.content, success=True)
+            except simplejson.errors.JSONDecodeError:
+                return dict(result=response.content, success=True)
+
         except requests.exceptions.ConnectionError as ex:
             return dict(error="Unable to connect to CloudFlare, max retries exceeded.")
 
