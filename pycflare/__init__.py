@@ -14,6 +14,7 @@ import json
 
 import requests
 
+from .account import Account
 from .kv import Storage
 
 
@@ -36,6 +37,15 @@ class CloudFlare(object):
         self.auth_key = auth_key
         self.storage = Storage(self)
         self.kv = self.storage
+        self.accounts = {}
+
+    def register_account(self, account_id, name):
+        try:
+            self.__getattribute__(name)
+            print("Error: Could not register account, name already in use.")
+        except AttributeError:
+            self.__setattr__(name, Account(identifier=account_id, name=name, cf=self))
+            self.accounts[account_id] = self.__getattribute__(name)
 
     @staticmethod
     def try_get_request(request_url, headers):

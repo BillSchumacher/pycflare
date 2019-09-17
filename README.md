@@ -20,6 +20,100 @@ Usage
     
     cf = CloudFlare(auth_email, auth_key)
     
+    #
+    # With wrapped helpers
+    #
+    
+    # This assigns a attribute of .test to the CloudFlare class.
+    # Accounts are still cached in the .accounts attribute when accessed, if you don't register.
+    
+    cf.register_account(account_id, "test")
+    
+    # Get all Namespaces
+    namespaces = cf.test.get_namespaces()
+    
+    # Create a new Namespace
+    new_namespace = cf.test.create_namespace("test")
+    
+    # Write Key-Value
+    cf.test.write_key(new_namespace.id, "hello", "world")
+    # or
+    new_namespace.write_key("hello", "world")
+    # or
+    new_namespace.write("hello", "world")
+    
+    
+    # Get Key-Value
+    print(cf.test.get_key(new_namespace.id, "hello"))
+    # or
+    print(new_namespace.get_key("hello"))
+    # or
+    print(new_namespace.get("hello"))
+    
+    
+    # Iterate over keys in Namespace
+    keys = cf.test.namespace_keys(new_namespace.id)
+    # or
+    keys = new_namespace.namespace_keys()
+    # or
+    keys = new_namespace.keys()
+    
+    print(keys)
+    for key in keys:
+        print(cf.test.get_key(new_namespace.id, key))
+        # or
+        print(new_namespace.get_key(key))
+        # or
+        print(new_namespace.get(key))
+        
+        
+    # Delete a key
+    cf.test.delete_key(new_namespace.id, "hello")
+    # or
+    new_namespace.delete_key("hello")
+    # or
+    hello_world = new_namespace.get("hello")
+    hello_world.delete()
+    
+    # Renaming a Namespace
+    cf.test.rename_namespace(new_namespace.id, "new_test")
+    # or
+    new_namespace.rename_namespace("new_test")
+    # or
+    new_namespace.rename("new_test")
+    
+    
+    # Iterating over Namespaces
+    namespaces = cf.test.get_namespaces()
+    for namespace in namespaces:
+        print(namespace)
+        
+    
+    # Bulk Writes
+    cf.test.bulk_write(new_namespace.id,
+                       [{"key": "world", "value": "hello"},
+                        {"key": "jello", "value": "mold"}])
+    # or
+    new_namespace.bulk_write([{"key": "world", "value": "hello"}, {"key": "jello", "value": "mold"}])
+    
+    
+    # Bulk Deletes
+    cf.test.bulk_delete(new_namespace.id, ["jello", "world"])
+    # or
+    new_namespace.bulk_delete(["jello", "world"])
+    
+    
+    # Delete a Namespace
+    cf.test.delete_namespace(new_namespace.id)
+    # or
+    new_namespace.delete_namespace()
+    
+    
+    #
+    # The long way, avoids a few function calls at the expense of verbosity.
+    #
+    
+    
     # Get all Namespaces
     namespaces = cf.storage.get_namespaces(account_id)
     ## cf.storage can also be cf.kv.get_namespaces(account_id)
@@ -63,6 +157,15 @@ Usage
     
 
 
+Of course you could always assign the account to a variable and avoid using the built-in attribute as well.
+
+You also have a reference to the previous classes as you go from Account -> Namespace -> Key.
+
+So you can do things like new_key.account or new_namespace.account or new_key.namespace, etc.
+
+There's also a reference to the base CloudFlare class .cf which is available everywhere.
+
+
 Contributing
 ---
 
@@ -80,10 +183,9 @@ This will be maintained for as long as I am using CloudFlare, don't hesitate to 
 Roadmap
 ---
 
-* Add support for registering account IDs to a name. (Quality of Life)
-* Add support for cache API.
-* Add support for routes API.
-* Add support for DNS API.
+* Adding support for cache API.
+* Adding support for routes API.
+* Adding support for DNS API.
 
 Suggestions are welcome.
 
