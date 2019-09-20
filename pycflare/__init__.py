@@ -33,9 +33,10 @@ class CloudFlare(object):
     expiration_param = "{base}?expiration={expiration}"
     expiration_ttl_param = "{base}?expiration_ttl={expiration_ttl}"
 
-    def __init__(self, auth_email=None, auth_key=None):
+    def __init__(self, auth_email=None, auth_key=None, enable_redis_compatibility=False):
         self.auth_email = auth_email
         self.auth_key = auth_key
+        self.redis_compat = enable_redis_compatibility
         self.storage = Storage(self)
         self.kv = self.storage
         self.accounts = {}
@@ -55,6 +56,8 @@ class CloudFlare(object):
             response = requests.get(request_url, headers=headers)
             try:
                 r = response.json()
+                if type(r) == list:
+                    return dict(result=r, success=True)
                 if not r.get("result"):
                     return dict(result=r, success=True)
                 return r

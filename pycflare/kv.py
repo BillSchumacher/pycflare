@@ -196,6 +196,127 @@ class Namespace(object):
         return self.account.bulk_delete(namespace_id=self.id, keys=keys)
 
 
+class RedisCompatibilityNamespace(Namespace):
+    """
+        A helper class that provides basic redis-like functionality for easy transitioning.
+
+    """
+    def sadd(self, key, value):
+        data = self.get_key(key)
+        if data is None:
+            the_set = set()
+        else:
+            try:
+                the_set = set(data.value)
+            except TypeError:
+                return None
+        the_set.add(value)
+        self.write_key(key, json.dumps(list(the_set)))
+        return the_set
+
+    def srem(self, key, value):
+        data = self.get_key(key)
+        if data is None:
+            return None
+        try:
+            the_set = set(data.value)
+        except TypeError:
+            return None
+        try:
+            the_set.remove(value)
+            self.write_key(key, json.dumps(list(the_set)))
+        except KeyError:
+            return None
+        return the_set
+
+    def smembers(self, key):
+        data = self.get_key(key)
+        if data is None:
+            return None
+        try:
+            the_set = set(data.value)
+        except TypeError:
+            return None
+        return list(the_set)
+
+    def sismember(self, key, value):
+        data = self.get_key(key)
+        if data is None:
+            return None
+        try:
+            the_set = set(data.value)
+        except TypeError:
+            return None
+        return value in the_set
+
+    def hset(self, key, hash_key, value):
+        data = self.get_key(key)
+        if data is None:
+            data = {hash_key: value}
+            self.write_key(key, json.dumps(data))
+            return data
+        if type(data.value) != dict:
+            return None
+        data.value[hash_key] = value
+        self.write_key(key, json.dumps(data.value))
+        return data.value
+
+    def hdel(self, key, value):
+        data = self.get_key(key)
+        if data is None:
+            return None
+        try:
+            data.value.pop(value)
+            self.write_key(key, json.dumps(data.value))
+            return data.value
+        except KeyError:
+            return data.value
+        except AttributeError:
+            return None
+        return None
+
+    def hmset(self, key, values):
+        data = self.get_key(key)
+        if data is None:
+            self.write_key(key, json.dumps(values))
+            return values
+        try:
+            data.value.update(values)
+            self.write_key(key, json.dumps(data.value))
+            return data.value
+        except TypeError:
+            pass
+        except AttributeError:
+            return None
+        return None
+
+    def hgetall(self, key):
+        data = self.get_key(key)
+        if data is not None:
+            return data.value
+        return None
+
+    def hget(self, key, value):
+        data = self.get_key(key)
+        if data is None:
+            return None
+        try:
+            return data.value.get(value)
+        except AttributeError:
+            return None
+
+    def set(self, key, value):
+        self.write_key(key, value)
+        return value
+
+    def get(self, key):
+        data = self.get_key(key)
+        return data.value
+
+    def delete(self, key):
+        self.delete_key(key)
+
+
 class Key(object):
     def __init__(self, account_id, namespace_id, name=None, value=None, account=None, namespace=None, cf=None,
                  *args, **kwargs):
@@ -223,8 +344,8 @@ class Key(object):
             self.namespace_id = namespace_id
             namespace = self.account.namespaces.get(namespace_id)
             if namespace is None:
-                namespace = Namespace(self.account_id, identifier=namespace_id, title=namespace_id, cf=cf,
-                                      account=self.account)
+                namespace = self.cf.kv.namespace_class(self.account_id, identifier=namespace_id,
+                                                       title=namespace_id, cf=cf, account=self.account)
                 self.account.namespaces[namespace_id] = namespace
                 self.namespace = self.account.namespaces[namespace_id]
             else:
@@ -322,6 +443,10 @@ class Storage(object):
         :param cf: The CloudFlare instance, stores commonly used methods and data.
         """
         self.cf = cf
+        if cf.redis_compat:
+            self.namespace_class = RedisCompatibilityNamespace
+        else:
+            self.namespace_class = Namespace
 
     def create_namespace(self, account_id, title):
         """
@@ -336,7 +461,7 @@ class Storage(object):
         response = self.cf.try_post_request(request_url, headers=headers, data=json.dumps(dict(title=title)))
         result = response.get("result")
         if result is not None:
-            return Namespace(account_id, cf=self.cf, **result)
+            return self.namespace_class(account_id, cf=self.cf, **result)
         return None
 
     def get_namespaces(self, account_id, page=1, per_page=20):
@@ -361,7 +486,7 @@ class Storage(object):
             if type(results) == list:
                 namespaces = []
                 for result in results:
-                    namespaces.append(Namespace(account_id, cf=self.cf, **result))
+                    namespaces.append(self.namespace_class(account_id, cf=self.cf, **result))
                 return namespaces
             return None
         return None
