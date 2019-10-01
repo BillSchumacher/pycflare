@@ -232,7 +232,7 @@ class RedisCompatibilityNamespace(Namespace):
     def smembers(self, key):
         data = self.get_key(key)
         if data is None:
-            return None
+            return []
         try:
             the_set = set(data.value)
         except TypeError:

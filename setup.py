@@ -34,7 +34,7 @@ test_requirements += these_requirements
 
 setup(
     name="pycflare",
-    version="0.7",
+    version="0.8",
     author="Bill Schumacher",
     author_email="williamschumacher@gmail.com",
     description="Python bindings for CloudFlare",
